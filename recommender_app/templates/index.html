@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 50 Popular Books</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .book-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .book-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .filter-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Book Haven</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/recommend">Recommendations</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="py-5 text-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Top 50 Popular Books</h1>
+            <p class="lead">Discover the most loved books by readers worldwide</p>
+        </div>
+    </header>
+
+    <!-- Search and Filter Section -->
+    <section class="container my-4">
+        <div class="filter-section">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <input type="text" id="searchInput" class="form-control search-bar" placeholder="Search books by title or author..." onkeyup="searchBooks()">
+                </div>
+                <div class="col-md-4">
+                    <select id="sortSelect" class="form-select" onchange="sortBooks()">
+                        <option value="title-asc">Sort by Title (A-Z)</option>
+                        <option value="title-desc">Sort by Title (Z-A)</option>
+                        <option value="rating-desc">Sort by Rating (High to Low)</option>
+                        <option value="rating-asc">Sort by Rating (Low to High)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Books Grid -->
+    <section class="container my-5">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="booksContainer">
+            {% for book in books %}
+            <div class="col book-item">
+                <div class="book-card card h-100 border-0 shadow-sm">
+                    <img src="{{ book['Image-URL-M'] }}" class="book-image card-img-top" alt="{{ book['Book-Title'] }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book['Book-Title'] }}</h5>
+                        <p class="card-text text-muted">Author: {{ book['Book-Author'] }}</p>
+                        <p class="card-text">Average Rating: {{ book['avg-Rating'] | round(2) }}</p>
+                        <p class="card-text">Book Rating: {{ book['Book-Rating'] }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container">
+            <p class="mb-0">© 2025 Book Haven. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function searchBooks() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const books = document.getElementsByClassName('book-item');
+
+            for (let i = 0; i < books.length; i++) {
+                const title = books[i].querySelector('.card-title').textContent.toLowerCase();
+                const author = books[i].querySelector('.card-text.text-muted').textContent.toLowerCase();
+                if (title.includes(input) || author.includes(input)) {
+                    books[i].style.display = '';
+                } else {
+                    books[i].style.display = 'none';
+                }
+            }
+        }
+
+        function sortBooks() {
+            const sortValue = document.getElementById('sortSelect').value;
+            const booksContainer = document.getElementById('booksContainer');
+            const books = Array.from(booksContainer.getElementsByClassName('book-item'));
+
+            books.sort((a, b) => {
+                const titleA = a.querySelector('.card-title').textContent.toLowerCase();
+                const titleB = b.querySelector('.card-title').textContent.toLowerCase();
+                const ratingA = parseFloat(a.querySelector('.card-text:nth-child(3)').textContent.split(': ')[1]);
+                const ratingB = parseFloat(b.querySelector('.card-text:nth-child(3)').textContent.split(': ')[1]);
+
+                if (sortValue === 'title-asc') return titleA.localeCompare(titleB);
+                if (sortValue === 'title-desc') return titleB.localeCompare(titleA);
+                if (sortValue === 'rating-desc') return ratingB - ratingA;
+                if (sortValue === 'rating-asc') return ratingA - ratingB;
+            });
+
+            booksContainer.innerHTML = '';
+            books.forEach(book => booksContainer.appendChild(book));
+        }
+    </script>
+</body>
+</html>
